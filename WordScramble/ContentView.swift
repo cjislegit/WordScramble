@@ -42,6 +42,13 @@ struct ContentView: View {
             } message: {
                 Text(errorMessage)
             }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("New Game") {
+                        startGame()
+                    }
+                }
+            }
         }
     }
     
@@ -62,6 +69,16 @@ struct ContentView: View {
         
         guard isReal(word: answer) else {
             wordError(title: "Word not real", message: "That isn't a real word.")
+            return
+        }
+        
+        guard isLongEnough(word: answer) else {
+            wordError(title: "Word must be longer than 3 characters", message: "Way too short")
+            return
+        }
+        
+        guard isNotSameAsRoot(word: answer) else {
+            wordError(title: "Word can't be same as root word", message: "You can't use the same word as the root word")
             return
         }
         
@@ -104,6 +121,14 @@ struct ContentView: View {
         let range = NSRange(location: 0, length: word.utf16.count)
         let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
         return misspelledRange.location == NSNotFound
+    }
+    
+    func isLongEnough(word: String) -> Bool {
+        word.count > 3 ? true : false
+    }
+    
+    func isNotSameAsRoot(word: String) -> Bool {
+        word.lowercased() != rootWord
     }
     
     func wordError(title: String, message: String) {
