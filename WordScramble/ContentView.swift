@@ -11,41 +11,62 @@ struct ContentView: View {
     @State private var usedWords = [String]()
     @State private var rootWord = ""
     @State private var newWord = ""
-    
+    @State private var score = 0
+
     @State private var errorTitle = ""
     @State private var errorMessage = ""
     @State private var showingError = false
     
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    TextField("Enter your word", text: $newWord)
-                        .textInputAutocapitalization(.never)
-                        
-                }
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
                 
-                Section {
-                    ForEach(usedWords, id: \.self) { word in
-                        HStack {
-                            Image(systemName: "\(word.count).circle")
-                            Text(word)
+                VStack(spacing: 0) {
+                    
+                    HStack {
+                        Text(rootWord)
+                            .font(.largeTitle)
+                            .bold()
+                        
+                        Spacer()
+                        
+                        Text("Score : \(score)")
+                    }
+                    .padding(.horizontal)
+                    
+                    List {
+                        Section {
+                            TextField("Enter your word", text: $newWord)
+                                .textInputAutocapitalization(.never)
+                            
+                        }
+                        
+                        Section {
+                            ForEach(usedWords, id: \.self) { word in
+                                HStack {
+                                    Image(systemName: "\(word.count).circle")
+                                    Text(word)
+                                }
+                            }
                         }
                     }
-                }
-            }
-            .navigationTitle(rootWord)
-            .onSubmit(addNewWord)
-            .onAppear(perform: startGame)
-            .alert(errorTitle, isPresented: $showingError) {
-                Button("OK") { }
-            } message: {
-                Text(errorMessage)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("New Game") {
-                        startGame()
+                    .onSubmit(addNewWord)
+                    .onAppear(perform: startGame)
+                    .scrollContentBackground(.hidden)
+                    .padding(.top, -25)
+                    .alert(errorTitle, isPresented: $showingError) {
+                        Button("OK") { }
+                    } message: {
+                        Text(errorMessage)
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("New Game") {
+                                startGame()
+                            }
+                        }
                     }
                 }
             }
@@ -85,6 +106,7 @@ struct ContentView: View {
         withAnimation {
             usedWords.insert(answer, at: 0)
         }
+        score += newWord.count
         newWord = ""
     }
     
@@ -93,6 +115,7 @@ struct ContentView: View {
             if let startWords = try? String(contentsOf: startWordsURL, encoding: .utf8) {
                 let allWords = startWords.components(separatedBy: "\n")
                 rootWord = allWords.randomElement() ?? "silkworm"
+                score = 0
                 return
             }
             fatalError("Could not load start.txt from bundle.")
